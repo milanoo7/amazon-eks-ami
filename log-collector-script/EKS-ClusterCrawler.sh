@@ -1,7 +1,7 @@
 # #!/bin/bash
 
 #### NOTE #######
-#  line number 74 - 103 of the script will collect all the currently deployed kubernetes resources that are not Namespace bound within the cluster. 
+#  Line number 74 - 103 of the script will collect all the currently deployed kubernetes resources that are not Namespace bound within the cluster. 
 # Such as PVC, SC, PV, WorkerNode information, WebHook Configuration related information to troubleshoot any issue involving these resources. 
 # If your present issue does not involve kubernetes resources mentioned above feel free to comment line 72 - 101 before executing the script.
 
