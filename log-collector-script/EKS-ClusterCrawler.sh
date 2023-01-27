@@ -1,5 +1,11 @@
 # #!/bin/bash
 
+#### NOTE #######
+#  line number 74 - 103 of the script will collect all the currently deployed kubernetes resources that are not Namespace bound within the cluster. 
+# Such as PVC, SC, PV, WorkerNode information, WebHook Configuration related information to troubleshoot any issue involving these resources. 
+# If your present issue does not involve kubernetes resources mentioned above feel free to comment line 72 - 101 before executing the script.
+
+
 ROOT_OUTPUT_DIR=$PWD
 echo "======================================="
 echo "Creating a Folder at:  $ROOT_OUTPUT_DIR"
@@ -57,45 +63,42 @@ if [[ "$NAMESPACE" = "$Default_Namespace" ]];then
  fi  
 done
 
-# # Collecting All the currently deployed kubernetes resources that are not Namespace bound within the cluster.
-
-
-
 # Collecting All the recent events logs.
+echo "Collecting recent events log that took place within ${CLUSTERNAME}, Review file: EventsInfo.txt"
+FILENAME5="${OUTPUT_DIR}/EventsInfo.txt"
+kubectl get events -A --sort-by=.metadata.creationTimestamp > "$FILENAME5"
 
-# echo "Collecting recent events log that took place within ${CLUSTERNAME}, Review file: EventsInfo.txt"
-# FILENAME5="${OUTPUT_DIR}/EventsInfo.txt"
-# kubectl get events -A --sort-by=.metadata.creationTimestamp > "$FILENAME5"
 
-# # Collecting All the Worker-Node level descriptions and their performance metrics informantion.
-# echo "Collecting information about all the presently running worker node within ${CLUSTERNAME}, Review file: WorkerNodeInfo.txt "
-# FILENAME6="${OUTPUT_DIR}/WorkerNodeInfo.txt"
-# kubectl describe node -A > "$FILENAME6"
+# Collecting All the Worker-Node level descriptions and their performance metrics informantion.
 
-# # Collecting All the information about persistance volume and storage class.
-# echo "Collecting information about all the persistance volume and storage class deployed ${CLUSTERNAME}, Review file: StorageInfo.txt  "
-# FILENAME7="${OUTPUT_DIR}/StorageInfo.txt"
-# echo "[1] ===========Storage Class Details===============" > "$FILENAME7"
-# kubectl get sc -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
-# kubectl describe sc -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
-# echo "[2] ===========PersistentVolume Details===============" >> "$FILENAME7"
-# kubectl get pv -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
-# kubectl describe pv -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
-# echo "[3] ===========PersistentVolume Claim Details===============" >> "$FILENAME7"
-# kubectl get pvc -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
-# kubectl describe pvc -A >> "$FILENAME7"
-# echo "==========================" >> "$FILENAME7"
+echo "Collecting information about all the presently running worker node within ${CLUSTERNAME}, Review file: WorkerNodeInfo.txt "
+FILENAME6="${OUTPUT_DIR}/WorkerNodeInfo.txt"
+kubectl describe node -A > "$FILENAME6"
 
-# echo "Collecting information about WebHook configured in ${CLUSTERNAME}, Review file: WebHookInfo.txt  "
-# FILENAME8="${OUTPUT_DIR}/WebHookInfo.txt"
-# kubectl describe validatingwebhookconfigurations.admissionregistration.k8s.io -A > "$FILENAME8"
+# Collecting All the information about persistance volume and storage class.
 
-# kubectl describe mutatingwebhookconfigurations.admissionregistration.k8s.io -A >> "$FILENAME8"
+echo "Collecting information about all the persistance volume and storage class deployed ${CLUSTERNAME}, Review file: StorageInfo.txt  "
+FILENAME7="${OUTPUT_DIR}/StorageInfo.txt"
+echo "[1] ===========Storage Class Details===============" > "$FILENAME7"
+kubectl get sc -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+kubectl describe sc -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+echo "[2] ===========PersistentVolume Details===============" >> "$FILENAME7"
+kubectl get pv -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+kubectl describe pv -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+echo "[3] ===========PersistentVolume Claim Details===============" >> "$FILENAME7"
+kubectl get pvc -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+kubectl describe pvc -A >> "$FILENAME7"
+echo "==========================" >> "$FILENAME7"
+
+echo "Collecting information about WebHook configured in ${CLUSTERNAME}, Review file: WebHookInfo.txt  "
+FILENAME8="${OUTPUT_DIR}/WebHookInfo.txt"
+kubectl describe validatingwebhookconfigurations.admissionregistration.k8s.io -A > "$FILENAME8"
+kubectl describe mutatingwebhookconfigurations.admissionregistration.k8s.io -A >> "$FILENAME8"
 
 
 
