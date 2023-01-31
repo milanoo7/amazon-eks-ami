@@ -1,9 +1,10 @@
 # #!/bin/bash
 
 #### NOTE #######
-#  Line number 74 - 103 of the script will collect all the currently deployed kubernetes resources that are not Namespace bound within the cluster. 
-# Such as PVC, SC, PV, WorkerNode information, WebHook Configuration related information to troubleshoot any issue involving these resources. 
-# If your present issue does not involve kubernetes resources mentioned above feel free to comment line 72 - 101 before executing the script.
+#  If your present issue does not involve kubernetes resources Such as PVC, SC, PV, WorkerNode information, WebHook Configuration
+#  Feel free to comment line number 83 - 112 before executing the script.
+#  The Line number 83 - 112 of the script will collect all the information about the kubernetes resources mentioned above that are not Namespace bound within the cluster. 
+
 
 
 ROOT_OUTPUT_DIR=$PWD
@@ -23,22 +24,36 @@ echo " ${CLUSTERNAME} Log Collected In Folder :  $OUTPUT_DIR"
 echo "======================================="
 cd $ROOT_OUTPUT_DIR
 mkdir "$OUTPUT_DIR"
-echo "Collecting information about kubernetes cluster: ${CLUSTERNAME} "
+echo "Collecting Information about kubernetes cluster: ${CLUSTERNAME}, Review file: ClusterDetails.txt "
 FILENAME="${OUTPUT_DIR}/ClusterDetails.txt"
 kubectl config current-context > "$FILENAME"
 echo "==========================" >> "$FILENAME"
 kubectl cluster-info >> "$FILENAME"
 echo "==========================" >> "$FILENAME"
 
+echo "Collecting ConfigMap details about kubernetes cluster: ${CLUSTERNAME}, Review file: ConfigMap_Info.txt "
+CONFIG="${OUTPUT_DIR}/ConfigMap_Info.txt"
+echo "[1] =========== AWS-Auth ConfigMap Details ===============" > "$CONFIG"
+kubectl describe configmap aws-auth -n kube-system >> "$CONFIG"
+echo "[1] =========== END ===============" >> "$CONFIG"
+echo "[2] =========== CoreDNS ConfigMap Details ===============" >> "$CONFIG"
+kubectl describe configmap coredns -n kube-system >> "$CONFIG"
+echo "[2] =========== END ===============" >> "$CONFIG"
+echo "[3] =========== Kube-Proxy ConfigMap Details ===============" >> "$CONFIG"
+kubectl describe configmap kube-proxy -n kube-system >> "$CONFIG"
+echo "[3] =========== END ===============" >> "$CONFIG"
+
+
+
 
 # Collecting All the PODs descriptions/logs running in User Desired Namespace Or by default it will collect pods log running in default namespace
 Default_Namespace=${1:-'default'}
+echo "Collecting the running POD Logs and Description from  Namespace:  ${Default_Namespace} "
 kubectl get ns --no-headers | while read -r line; do
 NAMESPACE=$(echo "$line" | awk '{print $1}')
 if [[ "$NAMESPACE" = "$Default_Namespace" ]];then
     kubectl get pods -n "$NAMESPACE" --no-headers | while read -r lines; do
             POD_NAME=$(echo "$lines" | awk '{print $1}')
-            echo "$POD_NAME" 
             FILENAME1="${OUTPUT_DIR}/${NAMESPACE}.${POD_NAME}.describe.txt"
             kubectl describe pod -n "$NAMESPACE" "$POD_NAME" > "$FILENAME1"
             for CONTAINER in $(kubectl get po -n "$NAMESPACE" "$POD_NAME" -o jsonpath="{.spec.containers[*].name}"); do
@@ -63,10 +78,6 @@ if [[ "$NAMESPACE" = "$Default_Namespace" ]];then
  fi  
 done
 
-# Collecting All the recent events logs.
-echo "Collecting recent events log that took place within ${CLUSTERNAME}, Review file: EventsInfo.txt"
-FILENAME5="${OUTPUT_DIR}/EventsInfo.txt"
-kubectl get events -A --sort-by=.metadata.creationTimestamp > "$FILENAME5"
 
 
 # Collecting All the Worker-Node level descriptions and their performance metrics informantion.
@@ -107,9 +118,9 @@ cd $ROOT_OUTPUT_DIR || exit 1
 
 echo " ***** INITIALIZING TARBALLING  ***** "
 echo "======= Collecting Errors and Failure logs, Review file: FoundErrors.txt ===================" 
-FILENAME5="${OUTPUT_DIR}/FoundErrors.txt"
-egrep -Ein "fail|err" "${OUTPUT_DIR}"/*.${EXTENSION} > "$FILENAME5"
-egrep -Ein "fail|err" "${OUTPUT_DIR}"/*.txt > "$FILENAME5"
+FILENAME9="${OUTPUT_DIR}/FoundErrors.txt"
+egrep -Ein "fail|err|off" "${OUTPUT_DIR}"/*.${EXTENSION} > "$FILENAME9"
+egrep -Ein "fail|err|off" "${OUTPUT_DIR}"/*.txt > "$FILENAME9"
 TARBALL_FILE_NAME="${OUTPUT_DIR_NAME}.tar.gz"
 echo "- File Created Successfully:  ${TARBALL_FILE_NAME} "
 tar -czf "./${TARBALL_FILE_NAME}" "./${OUTPUT_DIR_NAME}" 
